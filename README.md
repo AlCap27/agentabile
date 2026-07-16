@@ -33,7 +33,9 @@ solo gli adapter, mai il cuore del sistema.
 - **`wordpress-plugin/agentready/`** — plugin WordPress (PHP puro,
   nessuna dipendenza da Python a runtime — pensato per l'hosting
   condiviso WordPress.org): espone il catalogo WooCommerce come feed ACP
-  su `GET /wp-json/agentready/v1/feed/acp`. Vedi
+  su `GET /wp-json/agentready/v1/feed/acp`, con cache via transient (5
+  minuti, invalidata al salvataggio prodotto) ed esclusione dei prodotti
+  con visibilità "Nascosto". Vedi
   [wordpress-plugin/agentready/readme.txt](wordpress-plugin/agentready/readme.txt).
 
 ## Stato
@@ -43,8 +45,15 @@ ACP (validato contro lo schema JSON ufficiale) e Google Merchant Center,
 server MCP, Agent-Readiness Score, agent simulator, plugin WordPress.
 Ogni componente Python ha uno smoke test dedicato in `agentready/tests/`;
 il plugin WordPress è stato validato end-to-end contro un'istanza
-WooCommerce reale.
+WooCommerce reale, incluso un security review (licenza GPLv2 per
+compatibilità WordPress.org, esclusione prodotti nascosti dal feed, cache
+anti-DoS sull'endpoint pubblico).
 
 ## Licenza
 
 AGPL-3.0 — vedi [LICENSE](LICENSE).
+
+Eccezione: **`wordpress-plugin/agentready/`** è licenziato GPLv2-or-later
+(vedi il suo `readme.txt`), non AGPL-3.0 — la clausola network-use
+dell'AGPLv3 è incompatibile con la licenza del core di WordPress
+(GPLv2-or-later) ed è motivo di rigetto su WordPress.org.
