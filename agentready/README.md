@@ -104,6 +104,34 @@ WC_URL=http://localhost:8089 WC_CONSUMER_KEY=ck_... WC_CONSUMER_SECRET=cs_... \
 Per l'agent simulator: creare un file `.env` nella root del progetto con
 `AGENTREADY_API_KEY=sk-ant-...` (mai committarlo — è in `.gitignore`).
 
+## Plugin WordPress (`wordpress-plugin/agentready/`)
+
+Porting **PHP puro** (nessuna dipendenza da Python a runtime) di
+model.py + connectors/woocommerce.py + exporters/acp.py, pensato per
+girare su qualunque hosting WordPress.org — incluso condiviso, dove
+Python e `shell_exec` tipicamente non sono disponibili.
+
+- `agentready.php` — bootstrap del plugin, verifica che WooCommerce sia
+  attivo prima di agganciare qualunque funzionalità.
+- `includes/Mapper.php` — `WC_Product`/`WC_Product_Variation` → modello
+  canonico (array associativi). A differenza del connettore Python (REST
+  API + OAuth 1.0a, gira fuori da WordPress) qui l'accesso è diretto agli
+  oggetti WooCommerce, nessuna chiamata HTTP. Stessa copertura: prodotti
+  "simple"/"variable", brand (tassonomia `product_brand` o attributo
+  Brand/Marca), barcode (`get_global_unique_id()`), categorie gerarchiche.
+- `includes/AcpExporter.php` — modello canonico → feed ACP 2026-04-17,
+  stessa logica di `acp.py` (categorie propagate alle varianti,
+  `additionalProperties: false` rispettato emettendo solo campi previsti).
+- `includes/FeedController.php` — endpoint pubblico
+  `GET /wp-json/agentready/v1/feed/acp`.
+
+**Testato end-to-end contro l'istanza WooCommerce reale** (stessa usata
+per il connettore Python): plugin installato e attivato via wp-cli, feed
+scaricato via HTTP dall'endpoint REST reale, **validato con lo stesso
+validatore Python (`agentready.validate.validate_acp_products`) usato per
+l'exporter di riferimento — conforme allo schema ufficiale**. Prova
+incrociata che il porting PHP produce un feed equivalente a quello Python.
+
 ## Roadmap MVP (ordine di build)
 
 1. ~~**Connettore WooCommerce** (REST API v3) → Catalog canonico.~~ **Fatto.**
@@ -120,8 +148,12 @@ Per l'agent simulator: creare un file `.env` nella root del progetto con
 6. ~~**Agent simulator**: query reali via Claude API sul server MCP,
    report "perché il prodotto X non viene trovato".~~ **Fatto**, testato
    con chiamate reali (claude-haiku-4-5).
-7. Fase 2 — **Plugin WordPress.org** (canale di distribuzione primario):
-   wrapper PHP che chiama il motore Python o riimplementa l'export feed.
+7. ~~Fase 2 — **Plugin WordPress.org** (canale di distribuzione primario):
+   wrapper PHP che chiama il motore Python o riimplementa l'export feed.~~
+   **Fatto** — riimplementato in PHP puro (non wrapper: WordPress.org
+   hosting condiviso tipicamente non ha Python/`shell_exec`). Scope v0.1:
+   solo WooCommerce → feed ACP. Merchant Center e altri connettori restano
+   da portare in una versione successiva del plugin.
 
 ## Vincoli di progetto
 

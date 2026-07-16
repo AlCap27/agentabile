@@ -1,0 +1,48 @@
+<?php
+/**
+ * Plugin Name:       AgentReady per WooCommerce
+ * Plugin URI:        https://github.com/AlCap27/agentready
+ * Description:       Espone il catalogo WooCommerce come feed ACP (Agentic Commerce Protocol), leggibile dagli agenti AI. PHP puro, nessuna dipendenza da runtime esterni.
+ * Version:           0.1.0
+ * Requires at least: 6.0
+ * Requires PHP:      7.4
+ * Author:            AgentReady
+ * License:           AGPL-3.0-or-later
+ * License URI:       https://www.gnu.org/licenses/agpl-3.0.html
+ * Text Domain:       agentready
+ * Requires Plugins:  woocommerce
+ */
+
+namespace AgentReady;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Niente accesso diretto.
+}
+
+define( 'AGENTREADY_VERSION', '0.1.0' );
+define( 'AGENTREADY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+
+require_once AGENTREADY_PLUGIN_DIR . 'includes/Mapper.php';
+require_once AGENTREADY_PLUGIN_DIR . 'includes/AcpExporter.php';
+require_once AGENTREADY_PLUGIN_DIR . 'includes/FeedController.php';
+
+/**
+ * Aggancia le funzionalità del plugin solo se WooCommerce è attivo — nessuna
+ * dipendenza Python/esterna: il porting di model.py/woocommerce.py/acp.py
+ * è interamente PHP, pensato per girare su hosting condiviso WordPress.org.
+ */
+function bootstrap() {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		add_action( 'admin_notices', __NAMESPACE__ . '\\missing_woocommerce_notice' );
+		return;
+	}
+
+	FeedController::init();
+}
+add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
+
+function missing_woocommerce_notice() {
+	echo '<div class="notice notice-error"><p>';
+	esc_html_e( 'AgentReady richiede WooCommerce attivo per funzionare.', 'agentready' );
+	echo '</p></div>';
+}
