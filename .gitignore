@@ -3,3 +3,11 @@ __pycache__/
 *.pyc
 .claude/settings.local.json
 agentready-v0.0.1.tar.gz
+
+# Contenuti di funding/application/strategia commerciale: mai nel repo,
+# né nel codice né nella wiki. Restano solo in locale.
+agentready-wiki/Funding.md
+agentready-wiki/NGI-Taler-Application-FINAL.md
+agentready-wiki/NLnet-Application-DRAFT.md
+agentready-wiki/mail_taler.txt
+agentready-wiki-e-application.tar.gz
