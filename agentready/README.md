@@ -1,5 +1,7 @@
 # AgentReady
 
+Repo: https://github.com/AlCap27/agentready
+
 Toolkit open source (AGPL-3.0) per rendere i cataloghi delle PMI europee
 visibili e comprensibili agli agenti AI (ACP, Google Merchant/UCP, MCP),
 senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
