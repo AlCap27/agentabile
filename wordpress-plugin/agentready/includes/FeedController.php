@@ -11,8 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class FeedController {
 
-	const CACHE_KEY = 'agentready_acp_feed';
-	const CACHE_TTL = 5 * MINUTE_IN_SECONDS;
+	const CACHE_KEY  = 'agentready_acp_feed';
+	const CACHE_TTL  = 5 * MINUTE_IN_SECONDS;
+	const BATCH_SIZE = 100;
 
 	public static function init(): void {
 		add_action( 'rest_api_init', array( self::class, 'register_routes' ) );
@@ -21,6 +22,14 @@ class FeedController {
 		add_action( 'save_post_product', array( self::class, 'invalidate_cache' ) );
 		add_action( 'woocommerce_update_product', array( self::class, 'invalidate_cache' ) );
 		add_action( 'woocommerce_delete_product', array( self::class, 'invalidate_cache' ) );
+		// Le varianti (prodotti "variation") non passano per save_post_product,
+		// e le modifiche di stock hanno hook dedicati: senza questi, cambi su
+		// varianti/stock resterebbero invisibili fino alla scadenza del transient.
+		add_action( 'woocommerce_update_product_variation', array( self::class, 'invalidate_cache' ) );
+		add_action( 'woocommerce_save_product_variation', array( self::class, 'invalidate_cache' ) );
+		add_action( 'woocommerce_delete_product_variation', array( self::class, 'invalidate_cache' ) );
+		add_action( 'woocommerce_product_set_stock', array( self::class, 'invalidate_cache' ) );
+		add_action( 'woocommerce_variation_set_stock', array( self::class, 'invalidate_cache' ) );
 	}
 
 	public static function register_routes(): void {
@@ -39,26 +48,44 @@ class FeedController {
 		delete_transient( self::CACHE_KEY );
 	}
 
-	public static function serve_acp_feed(): \WP_REST_Response {
-		$feed = get_transient( self::CACHE_KEY );
+	// Niente type hint di ritorno: il plugin dichiara "Requires PHP: 7.4" e
+	// qui si può tornare sia WP_REST_Response sia WP_Error — un union type
+	// (WP_REST_Response|WP_Error) richiederebbe PHP 8.0+.
+	public static function serve_acp_feed() {
+		try {
+			$feed = get_transient( self::CACHE_KEY );
 
-		if ( false === $feed ) {
-			$feed = self::build_feed();
-			set_transient( self::CACHE_KEY, $feed, self::CACHE_TTL );
+			if ( false === $feed ) {
+				$feed = self::build_feed();
+				set_transient( self::CACHE_KEY, $feed, self::CACHE_TTL );
+			}
+
+			$response = new \WP_REST_Response( $feed );
+			$response->header( 'Cache-Control', 'public, max-age=' . self::CACHE_TTL );
+			return $response;
+		} catch ( \Throwable $e ) {
+			error_log( 'AgentReady: errore nella generazione del feed ACP: ' . $e->getMessage() );
+			return new \WP_Error( 'agentready_feed_error', 'Errore nella generazione del feed.', array( 'status' => 500 ) );
 		}
-
-		$response = new \WP_REST_Response( $feed );
-		$response->header( 'Cache-Control', 'public, max-age=' . self::CACHE_TTL );
-		return $response;
 	}
 
 	private static function build_feed(): array {
-		$products = wc_get_products(
-			array(
-				'status' => 'publish',
-				'limit'  => -1,
-			)
-		);
+		// Paginazione a blocchi di BATCH_SIZE, stessa convenzione del connettore
+		// Python (get_products()): evita di caricare l'intero catalogo in un
+		// solo colpo su store con molti prodotti.
+		$products = array();
+		$page     = 1;
+		do {
+			$batch = wc_get_products(
+				array(
+					'status' => 'publish',
+					'limit'  => self::BATCH_SIZE,
+					'page'   => $page,
+				)
+			);
+			$products = array_merge( $products, $batch );
+			$page++;
+		} while ( count( $batch ) === self::BATCH_SIZE );
 
 		// wc_get_products() non inoltra un 'tax_query' grezzo a WP_Query
 		// (WC_Product_Data_Store_CPT::get_wp_query_args() ricostruisce la

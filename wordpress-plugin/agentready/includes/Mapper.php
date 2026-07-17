@@ -28,12 +28,22 @@ class Mapper {
 	 * @return array<int, array>
 	 */
 	public static function map_all_products( array $wc_products ): array {
-		$out = array();
+		$out       = array();
+		$seen_ids  = array();
 		foreach ( $wc_products as $wc_product ) {
 			$mapped = self::map_product( $wc_product );
-			if ( null !== $mapped ) {
-				$out[] = $mapped;
+			if ( null === $mapped ) {
+				continue;
 			}
+			if ( isset( $seen_ids[ $mapped['id'] ] ) ) {
+				// Contratto canonico: id prodotto univoco nel feed. Un duplicato
+				// (es. SKU riusato per errore) viene scartato invece di rompere
+				// lo schema o sovrascrivere silenziosamente il primo.
+				error_log( 'AgentReady: prodotto ' . $wc_product->get_id() . ' saltato, id canonico duplicato: ' . $mapped['id'] );
+				continue;
+			}
+			$seen_ids[ $mapped['id'] ] = true;
+			$out[]                     = $mapped;
 		}
 		return $out;
 	}
@@ -59,9 +69,10 @@ class Mapper {
 			$variants = array( self::map_variant( $product, $product ) );
 		}
 
+		$id = self::stable_id( $product );
 		return array(
-			'id'                 => self::stable_id( $product ),
-			'title'              => $product->get_name(),
+			'id'                 => $id,
+			'title'              => '' !== $product->get_name() ? $product->get_name() : $id,
 			'brand'              => self::brand( $product ),
 			'description_plain'  => self::plain_text( $product->get_short_description() ),
 			'description_html'   => $product->get_description() ? $product->get_description() : null,
@@ -80,13 +91,23 @@ class Mapper {
 			$list_price = $regular;
 		}
 
+		// Le variation hanno una loro description dedicata; i prodotti simple
+		// (che non hanno variation) usano la short_description, come
+		// _simple_variant() nel connettore Python.
 		$description = $variant instanceof \WC_Product_Variation
 			? $variant->get_description()
-			: '';
+			: $variant->get_short_description();
+
+		$id    = self::stable_id( $variant );
+		$title = $variant->get_name() ? $variant->get_name() : $parent->get_name();
+		if ( '' === $title ) {
+			// Contratto canonico: mai emettere title vuoto, fallback sull'id stabile.
+			$title = $id;
+		}
 
 		return array(
-			'id'                 => self::stable_id( $variant ),
-			'title'              => $variant->get_name() ? $variant->get_name() : $parent->get_name(),
+			'id'                 => $id,
+			'title'              => $title,
 			'description_plain'  => self::plain_text( (string) $description ),
 			'url'                => get_permalink( $variant->get_id() ) ? get_permalink( $variant->get_id() ) : get_permalink( $parent->get_id() ),
 			'barcodes'           => self::barcodes( $variant ),
@@ -101,11 +122,16 @@ class Mapper {
 
 	private static function stable_id( \WC_Product $product ): string {
 		$sku = trim( (string) $product->get_sku() );
-		return '' !== $sku ? $sku : 'wc-' . $product->get_id();
+		// Prefisso allineato a _woo_id() del connettore Python.
+		return '' !== $sku ? $sku : 'woo-' . $product->get_id();
 	}
 
 	private static function money( $raw ) {
 		if ( null === $raw || '' === $raw ) {
+			return null;
+		}
+		if ( ! is_numeric( $raw ) ) {
+			// Prezzo illeggibile = prezzo assente (come Decimal/InvalidOperation in Python).
 			return null;
 		}
 		$amount = (float) $raw;
