@@ -11,9 +11,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agentready.connectors.woocommerce import WooCommerceClient, fetch_catalog
-from agentready.exporters.acp import catalog_to_acp
-from agentready.validate import validate_acp_products
+from agentabile.connectors.woocommerce import WooCommerceClient, fetch_catalog
+from agentabile.exporters.acp import catalog_to_acp
+from agentabile.validate import validate_acp_products
 
 PRODUCTS_PAGE_1 = [
     {

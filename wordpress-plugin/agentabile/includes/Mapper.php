@@ -1,5 +1,5 @@
 <?php
-namespace AgentReady;
+namespace Agentabile;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Mappa i prodotti WooCommerce nel modello canonico (array associativi),
- * porting PHP di agentready/connectors/woocommerce.py. A differenza del
+ * porting PHP di agentabile/connectors/woocommerce.py. A differenza del
  * connettore Python — che parla con WooCommerce via REST API + OAuth 1.0a
  * perché gira fuori da WordPress — qui il plugin vive dentro WordPress e
  * accede direttamente agli oggetti WC_Product: nessuna chiamata HTTP.
@@ -39,7 +39,7 @@ class Mapper {
 				// Contratto canonico: id prodotto univoco nel feed. Un duplicato
 				// (es. SKU riusato per errore) viene scartato invece di rompere
 				// lo schema o sovrascrivere silenziosamente il primo.
-				error_log( 'AgentReady: prodotto ' . $wc_product->get_id() . ' saltato, id canonico duplicato: ' . $mapped['id'] );
+				error_log( 'Agentabile: prodotto ' . $wc_product->get_id() . ' saltato, id canonico duplicato: ' . $mapped['id'] );
 				continue;
 			}
 			$seen_ids[ $mapped['id'] ] = true;

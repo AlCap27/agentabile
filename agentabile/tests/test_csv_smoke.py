@@ -11,15 +11,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agentready.connectors.csv import (
+from agentabile.connectors.csv import (
     auto_detect_mapping,
     load_mapping,
     read_csv_rows,
     rows_to_catalog,
     save_mapping,
 )
-from agentready.exporters.acp import catalog_to_acp
-from agentready.validate import validate_acp_products
+from agentabile.exporters.acp import catalog_to_acp
+from agentabile.validate import validate_acp_products
 
 CSV_TEXT = (
     "Codice Articolo;Item Group ID;Nome Prodotto;Descrizione;Marca;"
@@ -36,7 +36,7 @@ CSV_TEXT = (
 
 
 def _write_temp_csv() -> Path:
-    tmp_dir = Path(tempfile.mkdtemp(prefix="agentready-csv-smoke-"))
+    tmp_dir = Path(tempfile.mkdtemp(prefix="agentabile-csv-smoke-"))
     path = tmp_dir / "catalogo_demo.csv"
     path.write_text(CSV_TEXT, encoding="utf-8-sig")
     return path

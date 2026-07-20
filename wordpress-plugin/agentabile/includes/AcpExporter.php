@@ -1,5 +1,5 @@
 <?php
-namespace AgentReady;
+namespace Agentabile;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Export canonico -> ACP feed 2026-04-17, porting PHP di
- * agentready/exporters/acp.py. Stessa regola chiave: lo schema ufficiale ha
+ * agentabile/exporters/acp.py. Stessa regola chiave: lo schema ufficiale ha
  * additionalProperties:false ovunque, quindi si emettono SOLO campi previsti.
  */
 class AcpExporter {

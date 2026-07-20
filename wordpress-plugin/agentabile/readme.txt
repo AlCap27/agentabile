@@ -1,5 +1,5 @@
-=== AgentReady per WooCommerce ===
-Contributors: agentready
+=== Agentabile – AI Agent Readiness for WooCommerce (ACP, UCP, MCP) ===
+Contributors: agentabile
 Tags: woocommerce, ai, agentic commerce, acp, feed
 Requires at least: 6.0
 Tested up to: 6.7
@@ -12,18 +12,18 @@ Espone il catalogo WooCommerce come feed ACP (Agentic Commerce Protocol), leggib
 
 == Description ==
 
-AgentReady genera automaticamente un feed prodotto conforme alla Agentic Commerce Protocol (ACP) a partire dal tuo catalogo WooCommerce, disponibile su:
+Agentabile genera automaticamente un feed prodotto conforme alla Agentic Commerce Protocol (ACP) a partire dal tuo catalogo WooCommerce, disponibile su:
 
-`/wp-json/agentready/v1/feed/acp`
+`/wp-json/agentabile/v1/feed/acp`
 
 Nessuna configurazione richiesta: basta attivare il plugin con WooCommerce attivo. Il mapping da WooCommerce al modello canonico e l'export del feed sono interamente in PHP — nessun runtime Python o dipendenza esterna, funziona su qualunque hosting WordPress standard.
 
 == Installation ==
 
-1. Carica la cartella `agentready` in `/wp-content/plugins/`.
+1. Carica la cartella `agentabile` in `/wp-content/plugins/`.
 2. Attiva il plugin dal menu Plugin di WordPress.
 3. Assicurati che WooCommerce sia installato e attivo.
-4. Il feed è disponibile a `https://tuosito.it/wp-json/agentready/v1/feed/acp`.
+4. Il feed è disponibile a `https://tuosito.it/wp-json/agentabile/v1/feed/acp`.
 
 == Frequently Asked Questions ==
 
@@ -37,7 +37,7 @@ Prodotti "simple" e "variable" con le relative varianti. Prodotti "grouped" ed "
 
 = Il feed è compatibile con lo schema ACP ufficiale? =
 
-Sì — la struttura del feed replica esattamente l'exporter di riferimento del progetto AgentReady (Python), validato contro lo schema JSON ufficiale della Agentic Commerce Protocol.
+Sì — la struttura del feed replica esattamente l'exporter di riferimento del progetto Agentabile (Python), validato contro lo schema JSON ufficiale della Agentic Commerce Protocol.
 
 == Changelog ==
 

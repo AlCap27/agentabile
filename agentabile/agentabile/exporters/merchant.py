@@ -26,7 +26,7 @@ import io
 import xml.etree.ElementTree as ET
 from typing import Any, Optional
 
-from agentready.model import (
+from agentabile.model import (
     AvailabilityStatus,
     BarcodeType,
     Catalog,

@@ -1,5 +1,5 @@
 """
-AgentReady — Canonical Product Model.
+Agentabile — Canonical Product Model.
 
 Modello interno unico verso cui convergono tutti i connettori di ingestion
 (WooCommerce, PrestaShop, CSV) e da cui divergono tutti gli exporter

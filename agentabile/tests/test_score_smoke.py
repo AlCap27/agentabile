@@ -8,11 +8,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agentready.model import (
+from agentabile.model import (
     Availability, AvailabilityStatus, Barcode, BarcodeType, Catalog,
     Category, Media, Money, Product, Variant, VariantOption,
 )
-from agentready.score import format_report, score_catalog, score_product
+from agentabile.score import format_report, score_catalog, score_product
 
 
 def build_catalog() -> Catalog:

@@ -4,7 +4,7 @@ Connettore: WooCommerce REST API v3 → Catalog canonico.
 Legge i prodotti da un'istanza WooCommerce (`GET /wp-json/wc/v3/products`) e,
 per i prodotti variabili, le relative varianti
 (`GET /wp-json/wc/v3/products/{id}/variations`), mappandoli nel modello
-canonico (agentready.model.Catalog).
+canonico (agentabile.model.Catalog).
 
 Autenticazione (vedi WooCommerce REST API docs, class-wc-rest-authentication.php):
 - HTTPS: HTTP Basic Auth con consumer_key/consumer_secret (default).
@@ -32,7 +32,7 @@ from urllib.parse import quote, urljoin
 
 import requests
 
-from agentready.model import (
+from agentabile.model import (
     Availability,
     AvailabilityStatus,
     Barcode,

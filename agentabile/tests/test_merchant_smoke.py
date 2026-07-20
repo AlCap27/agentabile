@@ -16,11 +16,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agentready.model import (
+from agentabile.model import (
     Availability, AvailabilityStatus, Barcode, BarcodeType, Catalog,
     Category, Media, Money, Product, Shipping, Variant, VariantOption,
 )
-from agentready.exporters.merchant import (
+from agentabile.exporters.merchant import (
     _G_NS,
     catalog_to_merchant_rows,
     catalog_to_merchant_tsv,

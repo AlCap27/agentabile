@@ -1,5 +1,5 @@
 <?php
-namespace AgentReady;
+namespace Agentabile;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -7,11 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Endpoint pubblico che serve il feed ACP:
- * GET /wp-json/agentready/v1/feed/acp
+ * GET /wp-json/agentabile/v1/feed/acp
  */
 class FeedController {
 
-	const CACHE_KEY  = 'agentready_acp_feed';
+	const CACHE_KEY  = 'agentabile_acp_feed';
 	const CACHE_TTL  = 5 * MINUTE_IN_SECONDS;
 	const BATCH_SIZE = 100;
 
@@ -34,7 +34,7 @@ class FeedController {
 
 	public static function register_routes(): void {
 		register_rest_route(
-			'agentready/v1',
+			'agentabile/v1',
 			'/feed/acp',
 			array(
 				'methods'             => 'GET',
@@ -64,8 +64,8 @@ class FeedController {
 			$response->header( 'Cache-Control', 'public, max-age=' . self::CACHE_TTL );
 			return $response;
 		} catch ( \Throwable $e ) {
-			error_log( 'AgentReady: errore nella generazione del feed ACP: ' . $e->getMessage() );
-			return new \WP_Error( 'agentready_feed_error', 'Errore nella generazione del feed.', array( 'status' => 500 ) );
+			error_log( 'Agentabile: errore nella generazione del feed ACP: ' . $e->getMessage() );
+			return new \WP_Error( 'agentabile_feed_error', 'Errore nella generazione del feed.', array( 'status' => 500 ) );
 		}
 	}
 

@@ -1,30 +1,31 @@
 <?php
 /**
- * Plugin Name:       AgentReady per WooCommerce
- * Plugin URI:        https://github.com/AlCap27/agentready
+ * Plugin Name:       Agentabile – AI Agent Readiness for WooCommerce (ACP, UCP, MCP)
+ * Plugin URI:        https://agentabile.dev
  * Description:       Espone il catalogo WooCommerce come feed ACP (Agentic Commerce Protocol), leggibile dagli agenti AI. PHP puro, nessuna dipendenza da runtime esterni.
  * Version:           0.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Author:            AgentReady
+ * Author:            Agentabile
+ * Author URI:        https://agentabile.dev
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       agentready
+ * Text Domain:       agentabile
  * Requires Plugins:  woocommerce
  */
 
-namespace AgentReady;
+namespace Agentabile;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Niente accesso diretto.
 }
 
-define( 'AGENTREADY_VERSION', '0.1.0' );
-define( 'AGENTREADY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'AGENTABILE_VERSION', '0.1.0' );
+define( 'AGENTABILE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
-require_once AGENTREADY_PLUGIN_DIR . 'includes/Mapper.php';
-require_once AGENTREADY_PLUGIN_DIR . 'includes/AcpExporter.php';
-require_once AGENTREADY_PLUGIN_DIR . 'includes/FeedController.php';
+require_once AGENTABILE_PLUGIN_DIR . 'includes/Mapper.php';
+require_once AGENTABILE_PLUGIN_DIR . 'includes/AcpExporter.php';
+require_once AGENTABILE_PLUGIN_DIR . 'includes/FeedController.php';
 
 /**
  * Aggancia le funzionalità del plugin solo se WooCommerce è attivo — nessuna
@@ -43,6 +44,6 @@ add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
 
 function missing_woocommerce_notice() {
 	echo '<div class="notice notice-error"><p>';
-	esc_html_e( 'AgentReady richiede WooCommerce attivo per funzionare.', 'agentready' );
+	esc_html_e( 'Agentabile richiede WooCommerce attivo per funzionare.', 'agentabile' );
 	echo '</p></div>';
 }

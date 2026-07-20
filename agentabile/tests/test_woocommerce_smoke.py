@@ -23,9 +23,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agentready.connectors.woocommerce import fetch_catalog
-from agentready.exporters.acp import catalog_to_acp
-from agentready.validate import validate_acp_products
+from agentabile.connectors.woocommerce import fetch_catalog
+from agentabile.exporters.acp import catalog_to_acp
+from agentabile.validate import validate_acp_products
 
 WC_URL = os.environ.get("WC_URL")
 WC_CONSUMER_KEY = os.environ.get("WC_CONSUMER_KEY")

@@ -14,11 +14,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from mcp.shared.memory import create_connected_server_and_client_session
 
-from agentready.model import (
+from agentabile.model import (
     Availability, AvailabilityStatus, Catalog, Category, Media, Money,
     Product, Variant,
 )
-from agentready.mcp_server import build_server
+from agentabile.mcp_server import build_server
 
 
 def build_catalog() -> Catalog:

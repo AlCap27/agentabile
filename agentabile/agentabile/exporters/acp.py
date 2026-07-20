@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from agentready.model import Catalog, Media, Product, Variant
+from agentabile.model import Catalog, Media, Product, Variant
 
 # Mappa barcode canonico → tipi barcode ACP (stringa libera nella spec,
 # ma usiamo etichette convenzionali riconosciute dagli agent surface)

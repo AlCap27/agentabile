@@ -23,7 +23,7 @@ from typing import Any, Optional
 
 from mcp.server.fastmcp import FastMCP
 
-from agentready.model import Catalog, Product, Variant
+from agentabile.model import Catalog, Product, Variant
 
 
 def _tokenize(text: str) -> list[str]:
@@ -79,7 +79,7 @@ def _find_variant(catalog: Catalog, variant_id: str) -> tuple[Product, Variant]:
     raise ValueError(f"Variante non trovata: {variant_id}")
 
 
-def build_server(catalog: Catalog, *, name: str = "AgentReady Catalog") -> FastMCP:
+def build_server(catalog: Catalog, *, name: str = "Agentabile Catalog") -> FastMCP:
     """Genera un server FastMCP con i tool di ricerca/lettura sul Catalog dato."""
     mcp = FastMCP(
         name,
@@ -158,7 +158,7 @@ def build_server(catalog: Catalog, *, name: str = "AgentReady Catalog") -> FastM
     return mcp
 
 
-def run_stdio(catalog: Catalog, *, name: str = "AgentReady Catalog") -> None:
+def run_stdio(catalog: Catalog, *, name: str = "Agentabile Catalog") -> None:
     """Entry point: avvia il server MCP su stdio (uso tipico con client
     desktop/IDE che lanciano il processo direttamente)."""
     build_server(catalog, name=name).run(transport="stdio")

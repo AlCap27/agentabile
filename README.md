@@ -1,4 +1,4 @@
-# AgentReady
+# Agentabile
 
 Toolkit open source per rendere i cataloghi delle PMI europee visibili e
 comprensibili agli agenti AI (ACP, Google Merchant/UCP, MCP), senza
@@ -23,27 +23,27 @@ solo gli adapter, mai il cuore del sistema.
 
 ## Struttura del repo
 
-- **`agentready/`** — motore Python: modello canonico (pydantic),
+- **`agentabile/`** — motore Python: modello canonico (pydantic),
   connettori (WooCommerce REST v3, CSV con wizard di column-mapping),
   exporter (ACP, Google Merchant Center), server MCP auto-generato
   (`search_products`, `get_product`, `check_availability`),
   Agent-Readiness Score, agent simulator (query reali via Claude API).
-  Vedi [agentready/README.md](agentready/README.md) per i dettagli di
+  Vedi [agentabile/README.md](agentabile/README.md) per i dettagli di
   ogni modulo, come eseguire i test e le variabili d'ambiente richieste.
-- **`wordpress-plugin/agentready/`** — plugin WordPress (PHP puro,
+- **`wordpress-plugin/agentabile/`** — plugin WordPress (PHP puro,
   nessuna dipendenza da Python a runtime — pensato per l'hosting
   condiviso WordPress.org): espone il catalogo WooCommerce come feed ACP
-  su `GET /wp-json/agentready/v1/feed/acp`, con cache via transient (5
+  su `GET /wp-json/agentabile/v1/feed/acp`, con cache via transient (5
   minuti, invalidata al salvataggio prodotto) ed esclusione dei prodotti
   con visibilità "Nascosto". Vedi
-  [wordpress-plugin/agentready/readme.txt](wordpress-plugin/agentready/readme.txt).
+  [wordpress-plugin/agentabile/readme.txt](wordpress-plugin/agentabile/readme.txt).
 
 ## Stato
 
 MVP completo: modello canonico, connettori WooCommerce e CSV, exporter
 ACP (validato contro lo schema JSON ufficiale) e Google Merchant Center,
 server MCP, Agent-Readiness Score, agent simulator, plugin WordPress.
-Ogni componente Python ha uno smoke test dedicato in `agentready/tests/`;
+Ogni componente Python ha uno smoke test dedicato in `agentabile/tests/`;
 il plugin WordPress è stato validato end-to-end contro un'istanza
 WooCommerce reale, incluso un security review (licenza GPLv2 per
 compatibilità WordPress.org, esclusione prodotti nascosti dal feed, cache
@@ -53,7 +53,7 @@ anti-DoS sull'endpoint pubblico).
 
 AGPL-3.0 — vedi [LICENSE](LICENSE).
 
-Eccezione: **`wordpress-plugin/agentready/`** è licenziato GPLv2-or-later
+Eccezione: **`wordpress-plugin/agentabile/`** è licenziato GPLv2-or-later
 (vedi il suo `readme.txt`), non AGPL-3.0 — la clausola network-use
 dell'AGPLv3 è incompatibile con la licenza del core di WordPress
 (GPLv2-or-later) ed è motivo di rigetto su WordPress.org.

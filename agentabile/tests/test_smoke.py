@@ -7,12 +7,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agentready.model import (
+from agentabile.model import (
     Availability, AvailabilityStatus, Barcode, BarcodeType, Catalog,
     Category, Media, Money, Product, Variant, VariantOption,
 )
-from agentready.exporters.acp import catalog_to_acp
-from agentready.validate import validate_acp_products
+from agentabile.exporters.acp import catalog_to_acp
+from agentabile.validate import validate_acp_products
 
 
 def build_catalog() -> Catalog:

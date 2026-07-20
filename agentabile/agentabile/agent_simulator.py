@@ -1,5 +1,5 @@
 """
-Agent simulator: query reali via Claude API sul server MCP di AgentReady.
+Agent simulator: query reali via Claude API sul server MCP di Agentabile.
 
 A differenza di `tests/test_mcp_server_smoke.py` (che chiama i tool
 direttamente via protocollo MCP), questo modulo fa girare un vero agente
@@ -13,10 +13,10 @@ prodotto X non viene trovato":
    trovato una ricerca letterale sulla query dell'utente (isola: problema
    di formulazione della ricerca da parte dell'agente vs problema di dati).
 2. Se anche la ricerca letterale fallisce, incrocia con l'Agent-Readiness
-   Score (`agentready.score`) del prodotto per spiegare quali campi
+   Score (`agentabile.score`) del prodotto per spiegare quali campi
    mancanti probabilmente causano il mancato match.
 
-Richiede una API key Anthropic valida in `AGENTREADY_API_KEY` (letta da un
+Richiede una API key Anthropic valida in `AGENTABILE_API_KEY` (letta da un
 file `.env` nella root del progetto via python-dotenv, o già presente
 nell'ambiente) — le chiamate a run_simulation() hanno un costo reale
 sull'account Anthropic dell'utente, a differenza degli altri moduli del
@@ -32,9 +32,9 @@ from typing import Any, Optional
 
 from dotenv import load_dotenv
 
-from agentready.mcp_server import build_server
-from agentready.model import Catalog
-from agentready.score import score_product
+from agentabile.mcp_server import build_server
+from agentabile.model import Catalog
+from agentabile.score import score_product
 
 DEFAULT_MODEL = "claude-opus-4-8"
 
@@ -155,10 +155,10 @@ async def _simulate_one(
 def _build_client():
     from anthropic import AsyncAnthropic
 
-    api_key = os.environ.get("AGENTREADY_API_KEY")
+    api_key = os.environ.get("AGENTABILE_API_KEY")
     if not api_key:
         raise RuntimeError(
-            "Variabile d'ambiente AGENTREADY_API_KEY mancante. Impostala nel file .env "
+            "Variabile d'ambiente AGENTABILE_API_KEY mancante. Impostala nel file .env "
             f"nella root del progetto ({_PROJECT_ROOT / '.env'}) o nell'ambiente prima di "
             "chiamare run_simulation() — questo modulo esegue chiamate reali all'API Claude "
             "con un costo a consumo sull'account Anthropic."

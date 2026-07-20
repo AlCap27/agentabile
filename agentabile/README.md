@@ -1,6 +1,6 @@
-# AgentReady
+# Agentabile
 
-Repo: https://github.com/AlCap27/agentready
+Repo: https://github.com/AlCap27/agentabile
 
 Toolkit open source (AGPL-3.0) per rendere i cataloghi delle PMI europee
 visibili e comprensibili agli agenti AI (ACP, Google Merchant/UCP, MCP),
@@ -8,14 +8,14 @@ senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
 
 ## Stato — v0.0.1 (core funzionante)
 
-- `agentready/model.py` — Modello canonico prodotto (pydantic v2). Superset
+- `agentabile/model.py` — Modello canonico prodotto (pydantic v2). Superset
   di ACP 2026-04-17 e Merchant Center. Prezzi in Decimal, conversione in
   minor units solo in export. Validazione unicità id.
-- `agentready/exporters/acp.py` — Export canonico → ACP feed 2026-04-17.
+- `agentabile/exporters/acp.py` — Export canonico → ACP feed 2026-04-17.
   Rispetta `additionalProperties: false`; categorie propagate alle varianti.
-- `agentready/validate.py` — Validazione contro `schemas/schema.feed.json`
+- `agentabile/validate.py` — Validazione contro `schemas/schema.feed.json`
   ufficiale (vendored dal repo agentic-commerce-protocol, Draft 2020-12).
-- `agentready/connectors/woocommerce.py` — Connettore WooCommerce REST API v3
+- `agentabile/connectors/woocommerce.py` — Connettore WooCommerce REST API v3
   → Catalog canonico. Prodotti "simple" e "variable" (+ varianti), categorie,
   media, barcode (`global_unique_id`), brand (estensione "WooCommerce
   Brands" o attributo pa_brand). Auth: Basic su HTTPS, OAuth 1.0a
@@ -28,7 +28,7 @@ senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
   WooCommerce reale (env `WC_URL`/`WC_CONSUMER_KEY`/`WC_CONSUMER_SECRET`,
   skip se non impostate). **Passa** contro un'istanza locale via Docker
   (WordPress + WooCommerce, HTTP, auth OAuth1).
-- `agentready/connectors/csv.py` — Connettore CSV generico → Catalog
+- `agentabile/connectors/csv.py` — Connettore CSV generico → Catalog
   canonico. Wizard di column-mapping (`auto_detect_mapping`): tokenizza le
   intestazioni e le confronta con alias per campo (IT/EN) via similarità
   Jaccard, con warning leggibile per ogni campo non rilevato con sufficiente
@@ -38,7 +38,7 @@ senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
   via una colonna `group_id` opzionale (stile Item Group ID).
 - `tests/test_csv_smoke.py` — Wizard → mapping JSON → ingestion → ACP →
   validazione schema, offline. **Passa.**
-- `agentready/exporters/merchant.py` — Export canonico → feed Google
+- `agentabile/exporters/merchant.py` — Export canonico → feed Google
   Merchant Center (TSV e XML/RSS con namespace `g:`), porta d'ingresso UCP.
   Granularità a livello di Variant (un item = un'offerta), come in ACP.
   Attenzione: la convenzione prezzi è invertita rispetto ad ACP — Merchant
@@ -49,7 +49,7 @@ senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
   TSV/XML, riparsa entrambi (nessuno schema ufficiale vendorizzabile per
   Merchant Center, a differenza di ACP: la spec è documentazione prosa) e
   verifica i valori più delicati. **Passa.**
-- `agentready/mcp_server.py` — Server MCP (FastMCP) auto-generato da un
+- `agentabile/mcp_server.py` — Server MCP (FastMCP) auto-generato da un
   Catalog qualsiasi: `build_server(catalog)` espone `search_products`
   (testo libero + filtri categoria/brand/prezzo/disponibilità),
   `get_product` (dettaglio completo) e `check_availability` (stato di una
@@ -62,7 +62,7 @@ senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
   unit test delle funzioni Python) — `initialize`, `list_tools`,
   `call_tool` sui tre tool, inclusi i casi di errore (id inesistente).
   **Passa.**
-- `agentready/score.py` — Agent-Readiness Score + report data quality per
+- `agentabile/score.py` — Agent-Readiness Score + report data quality per
   merchant. Non valuta la conformità a un formato di export (già coperta da
   exporter/validate.py) ma la qualità intrinseca dei dati canonici: titolo,
   descrizione, brand, categorie, immagini, url, prezzo per variante,
@@ -75,15 +75,15 @@ senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
   issue) e uno scadente (quasi tutti i check falliscono) nello stesso
   catalogo: verifica discriminazione dei punteggi, summary aggregato e
   report leggibile. **Passa.**
-- `agentready/agent_simulator.py` — Agent simulator: fa girare un vero
+- `agentabile/agent_simulator.py` — Agent simulator: fa girare un vero
   agente Claude (tool use reale, non simulato) contro il server MCP per
   rispondere a query in linguaggio naturale sul catalogo. Per ogni query con
   un prodotto atteso non trovato, isola se è un problema di formulazione
   della ricerca da parte dell'agente (il motore MCP troverebbe il prodotto
   con la query letterale, l'agente ha cercato altro) o di qualità dati (il
   motore non lo trova nemmeno con la query letterale — incrocia con
-  `agentready.score` per spiegare quali campi mancano). Richiede
-  `AGENTREADY_API_KEY` (letta da un file `.env` nella root del progetto via
+  `agentabile.score` per spiegare quali campi mancano). Richiede
+  `AGENTABILE_API_KEY` (letta da un file `.env` nella root del progetto via
   python-dotenv) — chiama l'API Claude a pagamento, a differenza di tutto
   il resto del progetto. **Testato con chiamate reali** (claude-haiku-4-5):
   agente vero, tool use reale via protocollo MCP, entrambe le query di
@@ -102,16 +102,16 @@ WC_URL=http://localhost:8089 WC_CONSUMER_KEY=ck_... WC_CONSUMER_SECRET=cs_... \
 ```
 
 Per l'agent simulator: creare un file `.env` nella root del progetto con
-`AGENTREADY_API_KEY=sk-ant-...` (mai committarlo — è in `.gitignore`).
+`AGENTABILE_API_KEY=sk-ant-...` (mai committarlo — è in `.gitignore`).
 
-## Plugin WordPress (`wordpress-plugin/agentready/`)
+## Plugin WordPress (`wordpress-plugin/agentabile/`)
 
 Porting **PHP puro** (nessuna dipendenza da Python a runtime) di
 model.py + connectors/woocommerce.py + exporters/acp.py, pensato per
 girare su qualunque hosting WordPress.org — incluso condiviso, dove
 Python e `shell_exec` tipicamente non sono disponibili.
 
-- `agentready.php` — bootstrap del plugin, verifica che WooCommerce sia
+- `agentabile.php` — bootstrap del plugin, verifica che WooCommerce sia
   attivo prima di agganciare qualunque funzionalità.
 - `includes/Mapper.php` — `WC_Product`/`WC_Product_Variation` → modello
   canonico (array associativi). A differenza del connettore Python (REST
@@ -123,12 +123,12 @@ Python e `shell_exec` tipicamente non sono disponibili.
   stessa logica di `acp.py` (categorie propagate alle varianti,
   `additionalProperties: false` rispettato emettendo solo campi previsti).
 - `includes/FeedController.php` — endpoint pubblico
-  `GET /wp-json/agentready/v1/feed/acp`.
+  `GET /wp-json/agentabile/v1/feed/acp`.
 
 **Testato end-to-end contro l'istanza WooCommerce reale** (stessa usata
 per il connettore Python): plugin installato e attivato via wp-cli, feed
 scaricato via HTTP dall'endpoint REST reale, **validato con lo stesso
-validatore Python (`agentready.validate.validate_acp_products`) usato per
+validatore Python (`agentabile.validate.validate_acp_products`) usato per
 l'exporter di riferimento — conforme allo schema ufficiale**. Prova
 incrociata che il porting PHP produce un feed equivalente a quello Python.
 

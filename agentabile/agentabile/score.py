@@ -19,7 +19,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from agentready.model import Catalog, Product
+from agentabile.model import Catalog, Product
 
 _TAG_RE = re.compile(r"<[^>]+>")
 
