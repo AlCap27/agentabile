@@ -344,3 +344,15 @@ non mappato") invece di rompere.
 
 *Fine Fase 1. Questo documento va approvato da Alex prima di qualunque
 implementazione (Fase 2, sessione separata, /model sonnet).*
+
+---
+
+## Addendum post-approvazione (Fase 2, 2026-07-21)
+
+Il contenuto sopra resta il design approvato, non riaperto. Gli
+scostamenti numerici e i limiti emersi implementando (budget probe,
+gestione errore di rete su robots.txt, natura euristica hard-coded
+dell'applicabilità condizionale, 5 check Capability/Identity che non
+possono strutturalmente restituire FAIL in v1) sono documentati con il
+dettaglio tecnico in `agentabile/README.md`, sezione "Evaluator — scan
+gratuito", per non duplicare contenuto tra i due file.

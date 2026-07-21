@@ -1,6 +1,7 @@
 .env
 __pycache__/
 *.pyc
+*.egg-info/
 .claude/settings.local.json
 agentready-v0.0.1.tar.gz
 agentabile-v0.0.1.tar.gz

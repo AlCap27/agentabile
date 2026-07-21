@@ -1,0 +1,14 @@
+Confronto pre/post refactoring di agentabile/score.py (Fase 2 Evaluator, 2026-07-21)
+PRE = agentabile/score.py da git HEAD (prima del refactoring su engine+CatalogProvider)
+POST = agentabile/score.py del working tree (delega a agentabile.evaluator.engine + providers.catalog)
+Stesso catalogo di test di tests/test_score_smoke.py.
+
+campo                          PRE (HEAD)      POST (refactor) match
+---------------------------------------------------------------------------
+MOKA-CLASSIC score             100             100             True
+  issues identici                                              True
+MISTERO-001 score              0               0               True
+  issues identici                                              True
+overall_score                  50              50              True
+summary dict                                                   True
+format_report() output                                         True

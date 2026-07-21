@@ -9,25 +9,22 @@ abbastanza segnale per consigliarlo con sicurezza a un utente o per
 rispondere a domande su di esso. Lo score è quindi un proxy di "quanto un
 agente può fidarsi di questo prodotto", non di validità sintattica.
 
-Ogni check ha un peso; lo score di un prodotto è
-`100 * (max_points - punti persi) / max_points`, aggregato su tutto il
-catalogo come media. `format_report` produce un report leggibile per il
-merchant, con i problemi più diffusi in cima.
+Da EVALUATOR_DESIGN.md: questo modulo è la rubrica "quality" (DQ-*),
+distinta dalla rubrica AR-* verificata dal SiteProvider. I check pesati
+vivono in `agentabile.evaluator.providers.catalog` (producono Evidence);
+qui si delega allo scoring engine generico (`agentabile.evaluator.engine`)
+per il punteggio numerico e si ricostruiscono gli Issue per il report
+leggibile — firma e output numerico restano identici a prima del
+refactoring (stessi pesi, stesso `_MAX_POINTS` implicito = 110).
 """
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 
+from agentabile.evaluator import engine
+from agentabile.evaluator.evidence import Outcome
+from agentabile.evaluator.providers import catalog as catalog_provider
 from agentabile.model import Catalog, Product
-
-_TAG_RE = re.compile(r"<[^>]+>")
-
-
-def _plain_len(text: str | None) -> int:
-    if not text:
-        return 0
-    return len(_TAG_RE.sub(" ", text).strip())
 
 
 @dataclass
@@ -57,104 +54,23 @@ class CatalogReport:
 # Ogni check: (field, severity, weight, funzione(product) -> messaggio se fallisce, altrimenti None)
 
 
-def _check_title(p: Product) -> tuple[str, str, int, str] | None:
-    if not p.title or len(p.title.strip()) < 3:
-        return ("title", "error", 15, "Titolo mancante o troppo corto per essere utile a un agente")
-    return None
-
-
-def _check_description(p: Product) -> tuple[str, str, int, str] | None:
-    if max(_plain_len(p.description_plain), _plain_len(p.description_html)) < 20:
-        return (
-            "description", "warning", 15,
-            "Descrizione assente o troppo breve (<20 caratteri): poco contesto per un agente",
-        )
-    return None
-
-
-def _check_brand(p: Product) -> tuple[str, str, int, str] | None:
-    if not p.brand:
-        return ("brand", "info", 5, "Brand mancante — utile per matching cross-piattaforma e fiducia dell'agente")
-    return None
-
-
-def _check_category(p: Product) -> tuple[str, str, int, str] | None:
-    if not p.categories:
-        return ("categories", "warning", 10, "Nessuna categoria — l'agente non può posizionare il prodotto in una ricerca per categoria")
-    return None
-
-
-def _check_media(p: Product) -> tuple[str, str, int, str] | None:
-    if not p.media and not any(v.media for v in p.variants):
-        return ("media", "error", 15, "Nessuna immagine su prodotto o varianti — molte superfici agent (ACP, Google) la richiedono")
-    return None
-
-
-def _check_url(p: Product) -> tuple[str, str, int, str] | None:
-    if not p.url and not (p.variants and all(v.url for v in p.variants)):
-        return ("url", "warning", 10, "Nessun link alla pagina prodotto — l'agente non può indirizzare l'utente all'acquisto")
-    return None
-
-
-def _check_price(p: Product) -> tuple[str, str, int, str] | None:
-    unpriced = [v.id for v in p.variants if v.price is None]
-    if unpriced:
-        return (
-            "price", "error", 20,
-            f"{len(unpriced)}/{len(p.variants)} varianti senza prezzo: un agente non può proporre un acquisto ({', '.join(unpriced[:3])}{'...' if len(unpriced) > 3 else ''})",
-        )
-    return None
-
-
-def _check_barcode(p: Product) -> tuple[str, str, int, str] | None:
-    missing = [v.id for v in p.variants if not v.barcodes]
-    if missing:
-        return (
-            "barcode", "info", 5,
-            f"{len(missing)}/{len(p.variants)} varianti senza barcode (GTIN/EAN/UPC) — consigliato per il matching cross-piattaforma",
-        )
-    return None
-
-
-def _check_variant_options(p: Product) -> tuple[str, str, int, str] | None:
-    if len(p.variants) > 1:
-        missing = [v.id for v in p.variants if not v.options]
-        if missing:
-            return (
-                "variant_options", "warning", 10,
-                f"{len(missing)}/{len(p.variants)} varianti senza opzioni (es. colore/taglia): l'agente non può distinguerle o spiegarne la differenza",
-            )
-    return None
-
-
-def _check_availability_quantity(p: Product) -> tuple[str, str, int, str] | None:
-    incomplete = [v.id for v in p.variants if v.availability.status.value == "in_stock" and v.availability.quantity is None]
-    if incomplete:
-        return (
-            "availability", "info", 5,
-            f"{len(incomplete)}/{len(p.variants)} varianti 'in_stock' senza quantità: l'agente non può rispondere a 'quante ne avete disponibili'",
-        )
-    return None
-
-
-_CHECKS = [
-    _check_title, _check_description, _check_brand, _check_category,
-    _check_media, _check_url, _check_price, _check_barcode,
-    _check_variant_options, _check_availability_quantity,
-]
-_MAX_POINTS = 110  # somma dei pesi dei check sopra — non serve farla tornare a 100 a mano
-
-
 def score_product(p: Product) -> ProductScore:
-    issues: list[Issue] = []
-    for check in _CHECKS:
-        result = check(p)
-        if result is not None:
-            f_name, severity, points, message = result
-            issues.append(Issue(field=f_name, severity=severity, message=message, points=points))
-    lost = sum(i.points for i in issues)
-    score = max(0, round(100 * (_MAX_POINTS - lost) / _MAX_POINTS))
-    return ProductScore(product_id=p.id, score=score, issues=issues)
+    evidences = catalog_provider.evaluate_product(p)
+    axis = engine.score_axis(evidences, catalog_provider.DQ_RUBRIC, axis="quality")
+    issues = [
+        Issue(
+            field=e.observed["field"],
+            severity=e.observed["severity"],
+            message=e.detail,
+            points=int(e.observed["weight"]),
+        )
+        for e in evidences
+        if e.outcome == Outcome.FAIL
+    ]
+    # Ogni check DQ-* è sempre applicabile (mai N/A/unverifiable): il
+    # denominatore è quindi sempre 110, axis.score non è mai None qui.
+    assert axis.score is not None
+    return ProductScore(product_id=p.id, score=axis.score, issues=issues)
 
 
 def score_catalog(catalog: Catalog) -> CatalogReport:

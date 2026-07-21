@@ -91,15 +91,113 @@ senza dipendere dall'auto-enrollment delle piattaforme proprietarie.
 
 ```bash
 pip install pydantic jsonschema requests mcp anthropic python-dotenv
+pip install httpx selectolax extruct protego  # solo per agentabile.evaluator (scan gratuito)
 python3 tests/test_smoke.py
 python3 tests/test_woocommerce_mapping.py
 python3 tests/test_csv_smoke.py
 python3 tests/test_merchant_smoke.py
 python3 tests/test_mcp_server_smoke.py
 python3 tests/test_score_smoke.py
+python3 tests/test_evaluator_smoke.py
 WC_URL=http://localhost:8089 WC_CONSUMER_KEY=ck_... WC_CONSUMER_SECRET=cs_... \
   python3 tests/test_woocommerce_smoke.py
 ```
+
+## Evaluator — scan gratuito (`agentabile/evaluator/`)
+
+Fase 2 (implementazione) di `EVALUATOR_DESIGN.md` (design approvato da Alex
+il 2026-07-21). Due evidence provider su un unico scoring engine, l'engine
+non sa mai da dove viene l'evidenza:
+
+- `evidence.py` — contratto dati (`Evidence`, `RubricItem`, `AxisScore`,
+  `ScanReport`, pydantic v2).
+- `engine.py` — scoring generico rubrica+evidenze -> punteggio per asse
+  (`score(asse) = round(100 * Σpeso(PASS) / Σpeso(PASS∪FAIL))`; denominatore
+  0 -> asse `N/A`, mai zero).
+- `rubric_ar.py` — rubrica AR-* costruita da `schemas/agentready.spec.json`
+  (mai trascritta a mano), chiavata per `stableId`: un requisito nuovo in
+  un MINOR bump della spec produce un warning esplicito invece di rompere.
+  Include l'item sintetico `AR-COMM-ANY` (i requisiti Commerce della spec
+  sono alternativi, sommarli sarebbe scorretto).
+- `providers/catalog.py` — adapter Catalog canonico -> Evidence per la
+  rubrica DQ-* (data quality): `agentabile.score` ora delega qui + a
+  `engine.py`, con output numerico verificato identico a prima del
+  refactoring (`tests/test_score_smoke.py`, invariato, passa).
+- `providers/site/` — SiteProvider (scan gratuito da URL):
+  `fetcher.py` (robots.txt via protego, rate limit 1 req/s o Crawl-delay
+  se maggiore, budget pagine/probe/banda/tempo, canary anti-soft-404,
+  user-agent `AgentabileBot/1.0`), `context.py` (stato di uno scan),
+  `checks.py` (un check per requisito AR-* verificabile con fetch
+  statico — mappa 1:1 con EVALUATOR_DESIGN.md §3), `scan.py`
+  (orchestratore: homepage -> sitemap -> selezione pagine -> estrazione
+  JSON-LD/microdata via extruct -> gate commerce -> check -> `ScanReport`).
+
+Decisione di design non riaperta in Fase 2: il gate commerce agisce
+sull'intero asse Transactability, non solo su `AR-COMM-ANY` — su un sito
+senza superficie e-commerce l'asse T è **sempre** `N/A` (mai uno zero
+fuorviante calcolato dal solo `AR-IDEN-01`).
+
+**Scostamento numerico dal design, segnalato ad Alex**: `EVALUATOR_DESIGN.md`
+§5 stima "~15 probe leggere" (tilde = stima, a differenza degli altri
+numeri della stessa frase che sono hard cap espliciti). La mappa completa
+dei check AR-* richiede ~20-22 percorsi well-known distinti solo per
+Capabilities+Identity+Commerce: con 15 lo scan esauriva il budget di probe
+prima di arrivare ai check Commerce (proprio quelli critici per l'asse
+Transactability). Alzato a 25 in `fetcher.py` (`MAX_PROBES`), restando ben
+dentro l'hard cap esplicito di 45 richieste totali (uno scan reale usa
+tipicamente 2-9 pagine, non 25).
+
+**Verificato con evidenza reale** (`tests/test_evaluator_live.py`, da
+lanciare a mano — richiede rete, ~1-2 minuti per il rate limit):
+- Sito e-commerce reale (istanza WooCommerce Docker locale +
+  plugin Agentabile installato, vedi memoria `woocommerce-local-docker`):
+  gate commerce aperto, Transactability numerico, `AR-COMM-02`/
+  `AR-COMM-ANY` **PASS reale** via il feed ACP del plugin.
+- Sito editoriale reale (`www.agentready.org`): Visibility numerico,
+  Transactability `N/A`.
+- Sito senza segnali AR-* (`example.com`): Transactability `N/A` (mai 0).
+- Rifiuto per `robots.txt: Disallow: /` verificato in
+  `tests/test_evaluator_smoke.py` (server locale, scenario 3): scan
+  fermato, nessun punteggio inventato — non si è cercato un sito pubblico
+  che neghi la scansione solo per testarlo.
+- Bug reale trovato e corretto durante la verifica: un errore di rete
+  transitorio sul fetch di robots.txt veniva trattato silenziosamente
+  come "robots.txt assente" (permissivo + `AR-DISC-01` FAIL). Ora
+  distinto esplicitamente come `UNVERIFIABLE` (`Fetcher.robots_fetch_error`),
+  con nota in `ScanReport.limits`.
+
+**Limiti noti** (emersi implementando, non decisioni da riaprire ma da
+tenere presenti leggendo un report):
+- **L'applicabilità condizionale (N/A vs FAIL) è un'euristica hard-coded
+  in `checks.py`, non derivata dallo spec a runtime.** Il campo `applies`
+  di `agentready.spec.json` (es. "Products that expose an HTTP API") è
+  testo libero pensato per un lettore umano — `rubric_ar.py` non lo legge
+  mai (`build_rubric()` usa solo `stableId`, `name`, `strength`). La
+  decisione concreta "questo sito espone un'API quindi CAPA-08 è
+  applicabile" è scritta a mano in ogni `check_*` come proxy statico
+  dell'intento della spec (es. `_openapi_doc()` prova solo
+  `/openapi.json` e `/swagger.json`): un sito con un'API reale ma senza
+  uno di quei due file well-known verrebbe classificato `N/A` invece di
+  `FAIL`.
+- **5 degli 11 check Capability/Identity implementati in v1 non possono
+  strutturalmente restituire FAIL** — non è assenza di casi di test, è
+  assenza del branch `Outcome.FAIL` nel codice: `AR-CAPA-01`,
+  `AR-CAPA-04`, `AR-CAPA-08`, `AR-CAPA-09`, `AR-IDEN-03`. Per questi
+  l'unico binario osservabile è PASS/N/A: "requisito applicabile ma non
+  soddisfatto" e "superficie non rilevata" collassano nello stesso esito
+  N/A, perché in v1 non c'è un fetch statico affidabile per distinguerli.
+  Gli altri 6 check (`AR-CAPA-02`, `AR-IDEN-01`, `AR-IDEN-02`,
+  `AR-IDEN-04`, `AR-IDEN-05`, `AR-IDEN-06`) hanno davvero tre esiti
+  possibili, quasi sempre ancorati a un segnale correlato più debole
+  (es. `AR-IDEN-06` usa `_openapi_doc()`: se un'API è rilevata ma manca
+  `api-catalog`, è FAIL; se non c'è alcun segnale di API, è N/A).
+
+**Non ancora fatto** (Fase 2 prosegue in una sessione successiva): punto 4
+dell'ordine di implementazione (frontend minimo) — il design chiede
+esplicitamente di riusare pattern PoliSim se applicabili, ma il codice
+sorgente di PoliSim non è disponibile in locale (vedi memoria
+`agentready-project`): da chiarire con Alex prima di costruire un
+frontend da zero.
 
 Per l'agent simulator: creare un file `.env` nella root del progetto con
 `AGENTABILE_API_KEY=sk-ant-...` (mai committarlo — è in `.gitignore`).

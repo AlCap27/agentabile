@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentabile"
+version = "0.1.0"
+description = "Toolkit per rendere i cataloghi prodotto delle PMI europee leggibili dagli agenti AI (ACP, Google Merchant/UCP, MCP)."
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2",
+    "jsonschema",
+    "requests",
+    "mcp",
+    "anthropic",
+    "python-dotenv",
+]
+
+[tool.setuptools.packages.find]
+include = ["agentabile*"]
