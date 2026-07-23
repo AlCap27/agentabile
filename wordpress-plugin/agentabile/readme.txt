@@ -1,4 +1,4 @@
-=== Agentabile – AI Agent Readiness for WooCommerce (ACP, UCP, MCP) ===
+=== Agentabile – AI Agent Readiness for E-Commerce (ACP, UCP, MCP) ===
 Contributors: gilles27
 Tags: woocommerce, ai, agentic commerce, acp, feed
 Requires at least: 6.0

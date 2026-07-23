@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Agentabile – AI Agent Readiness for WooCommerce (ACP, UCP, MCP)
+ * Plugin Name:       Agentabile – AI Agent Readiness for E-Commerce (ACP, UCP, MCP)
  * Plugin URI:        https://agentabile.dev
  * Description:       Espone il catalogo WooCommerce come feed ACP (Agentic Commerce Protocol), leggibile dagli agenti AI. PHP puro, nessuna dipendenza da runtime esterni.
  * Version:           0.1.0
