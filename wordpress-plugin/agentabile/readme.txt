@@ -1,45 +1,47 @@
 === Agentabile – AI Agent Readiness for WooCommerce (ACP, UCP, MCP) ===
-Contributors: agentabile
+Contributors: gilles27
 Tags: woocommerce, ai, agentic commerce, acp, feed
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Espone il catalogo WooCommerce come feed ACP (Agentic Commerce Protocol), leggibile dagli agenti AI. PHP puro, nessuna dipendenza da runtime esterni.
+Exposes your WooCommerce catalog as an ACP (Agentic Commerce Protocol) feed, readable by AI agents. Pure PHP, no external runtime dependencies.
 
 == Description ==
 
-Agentabile genera automaticamente un feed prodotto conforme alla Agentic Commerce Protocol (ACP) a partire dal tuo catalogo WooCommerce, disponibile su:
+Agentabile automatically generates a product feed compliant with the Agentic Commerce Protocol (ACP) from your WooCommerce catalog, available at:
 
 `/wp-json/agentabile/v1/feed/acp`
 
-Nessuna configurazione richiesta: basta attivare il plugin con WooCommerce attivo. Il mapping da WooCommerce al modello canonico e l'export del feed sono interamente in PHP — nessun runtime Python o dipendenza esterna, funziona su qualunque hosting WordPress standard.
+No configuration required: just activate the plugin with WooCommerce active. The mapping from WooCommerce to the canonical model and the feed export are entirely written in PHP — no Python runtime or external dependency, works on any standard WordPress hosting.
 
 == Installation ==
 
-1. Carica la cartella `agentabile` in `/wp-content/plugins/`.
-2. Attiva il plugin dal menu Plugin di WordPress.
-3. Assicurati che WooCommerce sia installato e attivo.
-4. Il feed è disponibile a `https://tuosito.it/wp-json/agentabile/v1/feed/acp`.
+1. Upload the `agentabile` folder to `/wp-content/plugins/`.
+2. Activate the plugin from the WordPress Plugins menu.
+3. Make sure WooCommerce is installed and active.
+4. The feed is available at `https://yoursite.com/wp-json/agentabile/v1/feed/acp`.
 
 == Frequently Asked Questions ==
 
-= Serve Python o altre dipendenze? =
+= Do I need Python or other dependencies? =
 
-No. Il plugin è scritto interamente in PHP e gira su qualunque hosting WordPress standard, incluso condiviso.
+No. The plugin is written entirely in PHP and runs on any standard WordPress hosting, including shared hosting.
 
-= Quali tipi di prodotto sono supportati? =
+= Which product types are supported? =
 
-Prodotti "simple" e "variable" con le relative varianti. Prodotti "grouped" ed "external" non sono ancora supportati.
+"Simple" and "variable" products, including their variations. "Grouped" and "external" products are not yet supported.
 
-= Il feed è compatibile con lo schema ACP ufficiale? =
+= Is the feed compatible with the official ACP schema? =
 
-Sì — la struttura del feed replica esattamente l'exporter di riferimento del progetto Agentabile (Python), validato contro lo schema JSON ufficiale della Agentic Commerce Protocol.
+Yes — the feed structure exactly replicates the Agentabile project's reference exporter (Python), validated against the official Agentic Commerce Protocol JSON schema.
+
+== Screenshots ==
 
 == Changelog ==
 
 = 0.1.0 =
-* Prima versione: mapping WooCommerce -> modello canonico, export feed ACP via REST API.
+* First release: WooCommerce to canonical model mapping, ACP feed export via REST API.
