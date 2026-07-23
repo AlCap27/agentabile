@@ -39,7 +39,9 @@ class Mapper {
 				// Contratto canonico: id prodotto univoco nel feed. Un duplicato
 				// (es. SKU riusato per errore) viene scartato invece di rompere
 				// lo schema o sovrascrivere silenziosamente il primo.
-				error_log( 'Agentabile: prodotto ' . $wc_product->get_id() . ' saltato, id canonico duplicato: ' . $mapped['id'] );
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'Agentabile: prodotto ' . $wc_product->get_id() . ' saltato, id canonico duplicato: ' . $mapped['id'] );
+				}
 				continue;
 			}
 			$seen_ids[ $mapped['id'] ] = true;

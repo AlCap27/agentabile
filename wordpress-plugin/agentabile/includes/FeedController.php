@@ -64,7 +64,9 @@ class FeedController {
 			$response->header( 'Cache-Control', 'public, max-age=' . self::CACHE_TTL );
 			return $response;
 		} catch ( \Throwable $e ) {
-			error_log( 'Agentabile: errore nella generazione del feed ACP: ' . $e->getMessage() );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Agentabile: errore nella generazione del feed ACP: ' . $e->getMessage() );
+			}
 			return new \WP_Error( 'agentabile_feed_error', 'Errore nella generazione del feed.', array( 'status' => 500 ) );
 		}
 	}
