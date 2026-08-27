@@ -356,3 +356,21 @@ dell'applicabilità condizionale, 5 check Capability/Identity che non
 possono strutturalmente restituire FAIL in v1) sono documentati con il
 dettaglio tecnico in `agentabile/README.md`, sezione "Evaluator — scan
 gratuito", per non duplicare contenuto tra i due file.
+
+### Nota (2026-08-27): flag di affidabilità solo nel layer API del repo privato
+
+Il repo privato `Agentabile-Evaluator-private` (SiteProvider) calcola
+un segnale di affidabilità basato sulla quota di richieste fallite per
+errore di rete durante uno scan (`network_error_ratio`, soglia 20% →
+`reliable=False`). Oggi vive solo nel layer API di quel repo
+(`app.py`, stesso pattern già usato per `commerce_gate_open`:
+post-processing sul dict dopo `model_dump()`), non come campo di
+`ScanReport` qui — chi chiama `run_site_scan()` direttamente (CLI,
+libreria, non tramite l'API) vede solo la riga di testo libero in
+`limits`, non un booleano strutturato.
+
+Se in futuro emerge un consumer diretto della libreria che ha bisogno
+del flag strutturato, va promosso a campo vero di `ScanReport` (§2),
+aggiornando questo documento come previsto dal commento in testa a
+`evidence.py` ("contratto... non va esteso senza aggiornare il
+design"). Nota di tracciamento, nessuna implementazione qui.
